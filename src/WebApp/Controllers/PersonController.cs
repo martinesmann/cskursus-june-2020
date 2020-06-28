@@ -19,19 +19,38 @@ namespace WebApp.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly PersonContext personContext;
 
-        public PersonController(ILogger<WeatherForecastController> logger)
+        public PersonController(ILogger<WeatherForecastController> logger, PersonContext personContext)
         {
             _logger = logger;
+            this.personContext = personContext;
         }
 
         [HttpGet]
         public IEnumerable<Person> Get()
         {
-            using(PersonContext context = new PersonContext())
+            return personContext.Person.ToArray();
+        }
+
+        [HttpPost]
+        public IEnumerable<Person> Post(Person person)
+        {
+            personContext.Person.Add(person);
+            personContext.SaveChanges();
+            return personContext.Person.ToArray();
+        }
+
+        [HttpDelete]
+        public IEnumerable<Person> Delete(int id)
+        {
+            var p = personContext.Person.Where(person => person.Id == id).FirstOrDefault();
+            if (p != null)
             {
-                return context.Person.ToArray();
+                personContext.Remove(p);
+                personContext.SaveChanges();
             }
+            return personContext.Person.ToArray();
         }
     }
 }
